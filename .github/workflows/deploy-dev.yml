@@ -1,0 +1,62 @@
+name: Deploy to ECOMM_DEV
+
+on:
+  push:
+    branches:
+      - dev
+
+jobs:
+  deploy-dev:
+    runs-on: ubuntu-latest
+    environment: dev
+
+    env:
+      SNOWFLAKE_ACCOUNT: ${{ secrets.SNOWFLAKE_ACCOUNT }}
+      SNOWFLAKE_USER: ${{ secrets.SNOWFLAKE_USER }}
+      SNOWFLAKE_ROLE: ${{ secrets.SNOWFLAKE_ROLE }}
+      SNOWFLAKE_WAREHOUSE: ECOMM_ETL_WH
+      SNOWFLAKE_DATABASE: ECOMM_DEV
+      SNOWFLAKE_SCHEMA: APP
+      SNOWFLAKE_AUTHENTICATOR: SNOWFLAKE_JWT
+      SNOWFLAKE_PRIVATE_KEY_FILE: ${{ runner.temp }}/rsa_key.p8
+      PRIVATE_KEY_PASSPHRASE: ${{ secrets.SNOWFLAKE_PRIVATE_KEY_PASSPHRASE }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies and Snowflake CLI
+        run: |
+          pip install uv
+          uv pip install --system -e ".[dev]"
+
+      - name: Run lint and unit tests
+        run: |
+          ruff check .
+          ruff format --check .
+          pytest -v
+
+      - name: Write temporary RSA private key
+        run: |
+          printf '%s\n' "${{ secrets.SNOWFLAKE_PRIVATE_KEY }}" > "${{ runner.temp }}/rsa_key.p8"
+          chmod 600 "${{ runner.temp }}/rsa_key.p8"
+
+      - name: Apply idempotent SQL migrations to ECOMM_DEV
+        run: |
+          snow connection test -x
+          snow sql -x -f sql/02_schemas_and_stages.sql -D "db=ECOMM_DEV"
+          snow sql -x -f sql/03_raw_tables.sql -D "db=ECOMM_DEV"
+
+      - name: Deploy Streamlit app to ECOMM_DEV.APP
+        run: |
+          snow streamlit deploy --replace -x
+
+      - name: Clean up temporary private key
+        if: always()
+        run: rm -f "${{ runner.temp }}/rsa_key.p8"
+

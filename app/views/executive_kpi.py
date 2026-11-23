@@ -145,4 +145,3 @@ def render(session: Session) -> None:
             .properties(title="Net Revenue by Region", height=280)
         )
         st.altair_chart(reg_chart, use_container_width=True)
-

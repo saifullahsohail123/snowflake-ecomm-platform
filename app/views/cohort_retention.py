@@ -49,4 +49,3 @@ def render(session: Session) -> None:
             index="COHORT_MONTH", columns="MONTHS_SINCE_SIGNUP", values="RETENTION_RATE"
         )
         st.dataframe(pivot, use_container_width=True)
-

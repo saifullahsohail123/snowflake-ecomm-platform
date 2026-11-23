@@ -42,4 +42,3 @@ def test_generate_dataset_parquet_integrity(tmp_path: Path) -> None:
 def test_generate_dataset_rejects_non_positive_rows(tmp_path: Path) -> None:
     with pytest.raises(ValueError, match="positive"):
         generate_dataset(rows=0, output_dir=tmp_path)
-

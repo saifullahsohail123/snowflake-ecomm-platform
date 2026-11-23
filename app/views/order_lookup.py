@@ -37,4 +37,3 @@ def render(session: Session) -> None:
     m3.metric("Total Net Margin", f"${df['NET_MARGIN'].sum():,.2f}")
 
     st.dataframe(df, use_container_width=True, hide_index=True)
-

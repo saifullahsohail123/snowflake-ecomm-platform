@@ -1,0 +1,59 @@
+name: CI Checks
+
+on:
+  pull_request:
+    branches:
+      - dev
+      - main
+
+jobs:
+  quality-and-tests:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install uv and dependencies
+        run: |
+          pip install uv
+          uv pip install --system -e ".[dev]"
+
+      - name: Run Ruff lint
+        run: ruff check .
+
+      - name: Run Ruff format check
+        run: ruff format --check .
+
+      - name: Run Pytest unit tests
+        run: pytest -v
+
+      - name: SQL & repo safety guardrails
+        run: |
+          python - <<'EOF'
+          from pathlib import Path
+          import sys
+
+          bootstrap = Path("sql/01_bootstrap_account.sql").read_text()
+          if "AUTO_SUSPEND = 60" not in bootstrap:
+              print("ERROR: AUTO_SUSPEND = 60 missing in sql/01_bootstrap_account.sql")
+              sys.exit(1)
+
+          for forbidden in [".env", ".streamlit/secrets.toml"]:
+              if Path(forbidden).exists():
+                  print(f"ERROR: Forbidden secret file tracked in repo: {forbidden}")
+                  sys.exit(1)
+
+          p8_files = list(Path(".").rglob("*.p8"))
+          if p8_files:
+              print(f"ERROR: Private key files found in repo: {p8_files}")
+              sys.exit(1)
+
+          print("All SQL and security guardrails passed.")
+          EOF
+

@@ -23,4 +23,3 @@ def get_snowflake_session() -> Session:
     except Exception:
         conn = st.connection("snowflake")
         return conn.session()
-

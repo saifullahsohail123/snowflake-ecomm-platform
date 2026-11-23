@@ -232,4 +232,3 @@ def lookup_orders(
         LIMIT ?
     """
     return _session.sql(sql, params=[cleaned, int(limit)]).to_pandas()
-

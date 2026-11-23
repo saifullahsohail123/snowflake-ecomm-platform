@@ -124,4 +124,3 @@ def test_get_inventory_health_only_at_risk_clause() -> None:
     called_sql, called_kwargs = mock_session.sql.call_args
     assert "STOCKOUT_RISK_FLAG = TRUE" in called_sql[0]
     assert called_kwargs["params"] == ["Beauty"]
-
