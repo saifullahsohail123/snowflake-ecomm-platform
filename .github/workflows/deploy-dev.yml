@@ -18,7 +18,6 @@ jobs:
       SNOWFLAKE_DATABASE: ECOMM_DEV
       SNOWFLAKE_SCHEMA: APP
       SNOWFLAKE_AUTHENTICATOR: SNOWFLAKE_JWT
-      SNOWFLAKE_PRIVATE_KEY_FILE: ${{ runner.temp }}/rsa_key.p8
       PRIVATE_KEY_PASSPHRASE: ${{ secrets.SNOWFLAKE_PRIVATE_KEY_PASSPHRASE }}
 
     steps:
@@ -45,6 +44,7 @@ jobs:
         run: |
           printf '%s\n' "${{ secrets.SNOWFLAKE_PRIVATE_KEY }}" > "${{ runner.temp }}/rsa_key.p8"
           chmod 600 "${{ runner.temp }}/rsa_key.p8"
+          echo "SNOWFLAKE_PRIVATE_KEY_FILE=${{ runner.temp }}/rsa_key.p8" >> "$GITHUB_ENV"
 
       - name: Apply idempotent SQL migrations to ECOMM_DEV
         run: |
