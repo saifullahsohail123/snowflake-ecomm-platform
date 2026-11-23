@@ -1,0 +1,32 @@
+# Environment & secrets (NEVER commit)
+.env
+.env.*
+!.env.example
+*.p8
+*.pub
+*.pem
+.streamlit/secrets.toml
+
+# Python & virtual environments
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+.pytest_cache/
+.ruff_cache/
+
+# Generated synthetic data & Snowflake local caches
+data/raw/
+*.parquet
+*.csv
+!docs/*.csv
+.snowflake/
+
+# OS & editor junk
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
