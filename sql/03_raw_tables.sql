@@ -1,0 +1,44 @@
+-- =============================================================================
+-- 03_raw_tables.sql
+-- Purpose : Idempotent DDL for RAW landing tables
+-- Run Via : snow sql -c dev -f sql/03_raw_tables.sql -D "db=ECOMM_DEV" --enable-templating JINJA
+-- =============================================================================
+
+USE ROLE ECOMM_CICD_ROLE;
+USE WAREHOUSE ECOMM_ETL_WH;
+USE DATABASE <% db %>;
+USE SCHEMA RAW;
+
+CREATE TABLE IF NOT EXISTS RAW_CUSTOMERS (
+    CUSTOMER_ID         VARCHAR(32) NOT NULL,
+    SIGNUP_DATE         DATE        NOT NULL,
+    REGION              VARCHAR(32) NOT NULL,
+    ACQUISITION_CHANNEL VARCHAR(32) NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS RAW_PRODUCTS (
+    SKU_ID        VARCHAR(32)   NOT NULL,
+    PRODUCT_NAME  VARCHAR(128)  NOT NULL,
+    CATEGORY      VARCHAR(64)   NOT NULL,
+    UNIT_COST     NUMBER(10, 2) NOT NULL,
+    UNIT_PRICE    NUMBER(10, 2) NOT NULL,
+    STOCK_ON_HAND INTEGER       NOT NULL,
+    REORDER_POINT INTEGER       NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS RAW_ORDERS (
+    ORDER_ID        VARCHAR(32)   NOT NULL,
+    CUSTOMER_ID     VARCHAR(32)   NOT NULL,
+    ORDER_TS        TIMESTAMP_NTZ NOT NULL,
+    ORDER_STATUS    VARCHAR(24)   NOT NULL,
+    SHIPPING_COST   NUMBER(10, 2) NOT NULL,
+    DISCOUNT_AMOUNT NUMBER(10, 2) NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS RAW_ORDER_ITEMS (
+    ORDER_ITEM_ID VARCHAR(36)   NOT NULL,
+    ORDER_ID      VARCHAR(32)   NOT NULL,
+    SKU_ID        VARCHAR(32)   NOT NULL,
+    QUANTITY      INTEGER       NOT NULL,
+    UNIT_PRICE    NUMBER(10, 2) NOT NULL
+);
