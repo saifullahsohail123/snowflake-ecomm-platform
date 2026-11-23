@@ -49,9 +49,22 @@ End-to-end **Snowflake + Streamlit in Snowflake (SiS)** analytics platform with 
 
 5. **Micro-Partition Pruning & Cost Proof ([docs/performance.md](docs/performance.md)):**
    - Benchmarked on **5,000,000 rows** in `ECOMM_DEV.MART.FACT_ORDERS` with `USE_CACHED_RESULT = FALSE`:
-     - **Baseline (Unsorted):** `9 / 9` partitions scanned (`21.16 MB`, `393 ms`, `average_depth = 9.0`).
-     - **Sorted (`ORDER BY ORDER_DATE, CATEGORY`):** `1 / 8` partitions scanned (**87.5% pruned**), `2.09 MB` scanned (**-90.1% I/O**), `232 ms`, `average_depth = 1.0`.
-     - **Result Cache (`USE_CACHED_RESULT = TRUE`, 2nd run):** `0` partitions scanned, `0 B` warehouse I/O.
+     - **Baseline (Unsorted):** `8 / 8` partitions scanned (`46.88 MB`, `664 ms`, `average_depth = 9.0`).
+     - **Sorted (`ORDER BY ORDER_DATE, CATEGORY`):** `1 / 8` partitions scanned (**87.5% pruned**), `2.09 MB` scanned (**-95.5% I/O**), `210 ms`, `average_depth = 1.0`.
+     - **Result Cache (`USE_CACHED_RESULT = TRUE`, 2nd run):** `0` partitions scanned, `0 B` warehouse I/O (`1 ms`).
+
+---
+
+## Screenshots & Verification Evidence
+
+### Automated Multi-Environment CI/CD (`ECOMM_DEV` & `ECOMM_PROD`)
+![GitHub Actions CI/CD](docs/images/github_actions_cicd.png)
+
+### Query Profile: Micro-Partition Pruning & Result Cache (5M Rows)
+
+| Baseline (`FACT_ORDERS`: `8/8` partitions, `46.88 MB`) | Pruned (`FACT_ORDERS_SORTED`: `1/8` partitions, `2.09 MB`) | Result Cache (`QUERY RESULT REUSE`, `1 ms`) |
+|---|---|---|
+| ![Baseline Query Profile](docs/images/query_profile_baseline.png) | ![Pruned Query Profile](docs/images/query_profile_pruned.png) | ![Result Cache Query Profile](docs/images/query_profile_cached.png) |
 
 ---
 
