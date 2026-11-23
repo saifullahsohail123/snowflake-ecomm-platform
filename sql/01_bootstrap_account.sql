@@ -161,17 +161,18 @@ GRANT USAGE, MONITOR ON COMPUTE POOL ECOMM_APP_POOL TO ROLE ECOMM_CICD_ROLE;
 GRANT USAGE ON COMPUTE POOL ECOMM_APP_POOL TO ROLE ECOMM_APP_ROLE;
 
 -- Needed by Container Runtime to fetch PyPI packages from external network
--- (Skip if your trial restricts External Access Integrations; Warehouse Runtime needs none)
-CREATE OR REPLACE NETWORK RULE ECOMM_PYPI_NETWORK_RULE
-    MODE = EGRESS
-    TYPE = HOST_PORT
-    VALUE_LIST = ('pypi.org', 'files.pythonhosted.org');
-
-CREATE OR REPLACE EXTERNAL ACCESS INTEGRATION ECOMM_PYPI_ACCESS
-    ALLOWED_NETWORK_RULES = (ECOMM_PYPI_NETWORK_RULE)
-    ENABLED = TRUE;
-
-GRANT USAGE ON INTEGRATION ECOMM_PYPI_ACCESS TO ROLE ECOMM_CICD_ROLE;
+-- Commented out: Snowflake trial accounts do not support External Access Integrations.
+-- Warehouse Runtime fallback in Phase 2 does not require external network access.
+-- CREATE OR REPLACE NETWORK RULE ECOMM_PYPI_NETWORK_RULE
+--     MODE = EGRESS
+--     TYPE = HOST_PORT
+--     VALUE_LIST = ('pypi.org', 'files.pythonhosted.org');
+--
+-- CREATE OR REPLACE EXTERNAL ACCESS INTEGRATION ECOMM_PYPI_ACCESS
+--     ALLOWED_NETWORK_RULES = (ECOMM_PYPI_NETWORK_RULE)
+--     ENABLED = TRUE;
+--
+-- GRANT USAGE ON INTEGRATION ECOMM_PYPI_ACCESS TO ROLE ECOMM_CICD_ROLE;
 
 -- -----------------------------------------------------------------------------
 -- 8. CI/CD Service User (MFA-exempt, Key-Pair Auth ONLY)
@@ -189,6 +190,7 @@ GRANT ROLE ECOMM_CICD_ROLE TO USER SVC_GITHUB_CICD;
 -- 9. Grant Dev & App Roles to YOUR Interactive Human User
 --    Replace <YOUR_SNOWFLAKE_USERNAME> with your Snowsight login name and uncomment!
 -- -----------------------------------------------------------------------------
--- GRANT ROLE ECOMM_CICD_ROLE TO USER <YOUR_SNOWFLAKE_USERNAME>;
--- GRANT ROLE ECOMM_APP_ROLE TO USER <YOUR_SNOWFLAKE_USERNAME>;
--- GRANT ROLE ECOMM_VIEWER_ROLE TO USER <YOUR_SNOWFLAKE_USERNAME>;
+
+GRANT ROLE ECOMM_CICD_ROLE TO USER "saifu0905";
+GRANT ROLE ECOMM_APP_ROLE TO USER "saifu0905";
+GRANT ROLE ECOMM_VIEWER_ROLE TO USER "saifu0905";  

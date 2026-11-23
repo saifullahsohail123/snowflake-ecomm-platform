@@ -744,7 +744,9 @@ def generate_orders_chunk(
 
     order_ids = np.array([f"ORD_{order_start_id + i:09d}" for i in range(num_orders)])
     order_statuses = rng.choice(ORDER_STATUSES, size=num_orders, p=ORDER_STATUS_WEIGHTS)
-    shipping_costs = np.round(rng.choice([0.0, 4.99, 7.99, 12.99], size=num_orders, p=[0.4, 0.3, 0.2, 0.1]), 2)
+    shipping_costs = np.round(
+        rng.choice([0.0, 4.99, 7.99, 12.99], size=num_orders, p=[0.4, 0.3, 0.2, 0.1]), 2
+    )
     discount_amounts = np.round(
         np.where(rng.random(num_orders) < 0.25, rng.uniform(5.0, 35.0, size=num_orders), 0.0), 2
     )
@@ -761,9 +763,9 @@ def generate_orders_chunk(
     )
 
     if unsorted:
-        orders_df = orders_df.sample(frac=1.0, random_state=int(rng.integers(0, 1_000_000))).reset_index(
-            drop=True
-        )
+        orders_df = orders_df.sample(
+            frac=1.0, random_state=int(rng.integers(0, 1_000_000))
+        ).reset_index(drop=True)
     else:
         orders_df = orders_df.sort_values("order_ts").reset_index(drop=True)
 
@@ -866,9 +868,13 @@ def generate_dataset(
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Generate synthetic e-commerce data for Snowflake.")
+    parser = argparse.ArgumentParser(
+        description="Generate synthetic e-commerce data for Snowflake."
+    )
     parser.add_argument("--rows", type=int, default=50_000, help="Number of order line items.")
-    parser.add_argument("--output-dir", type=Path, default=Path("data/raw"), help="Output directory.")
+    parser.add_argument(
+        "--output-dir", type=Path, default=Path("data/raw"), help="Output directory."
+    )
     parser.add_argument("--format", choices=["parquet", "csv"], default="parquet")
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument(
@@ -981,7 +987,9 @@ from snowflake.snowpark import Session, Window
 from snowflake.snowpark import functions as F
 
 
-def _load_private_key_bytes(key_path: str | None, key_pem: str | None, passphrase: str | None) -> bytes:
+def _load_private_key_bytes(
+    key_path: str | None, key_pem: str | None, passphrase: str | None
+) -> bytes:
     """Decode an encrypted/unencrypted PKCS#8 PEM private key into DER bytes for Snowflake."""
     raw_pem = key_pem.encode("utf-8") if key_pem else Path(key_path or "").read_bytes()
     pwd = passphrase.encode("utf-8") if passphrase else None
@@ -1023,9 +1031,7 @@ def create_snowpark_session(database: str, connection_name: str | None = None) -
     elif os.getenv("SNOWFLAKE_PASSWORD"):
         cfg["password"] = os.environ["SNOWFLAKE_PASSWORD"]
     else:
-        raise RuntimeError(
-            "Provide --connection <name> or SNOWFLAKE_PRIVATE_KEY(_PATH) env vars."
-        )
+        raise RuntimeError("Provide --connection <name> or SNOWFLAKE_PRIVATE_KEY(_PATH) env vars.")
 
     return Session.builder.configs(cfg).create()
 
@@ -1073,9 +1079,7 @@ def build_mart_tables(session: Session, database: str, sort_fact_orders: bool = 
     )
 
     fact_orders = (
-        joined.with_column(
-            "ALLOCATED_DISCOUNT", F.round(F.col("DISCOUNT_AMOUNT") * alloc_ratio, 2)
-        )
+        joined.with_column("ALLOCATED_DISCOUNT", F.round(F.col("DISCOUNT_AMOUNT") * alloc_ratio, 2))
         .with_column("ALLOCATED_SHIPPING", F.round(F.col("SHIPPING_COST") * alloc_ratio, 2))
         .with_column(
             "NET_REVENUE", F.round(F.col("GROSS_REVENUE") - F.col("ALLOCATED_DISCOUNT"), 2)
@@ -1243,7 +1247,9 @@ def build_mart_tables(session: Session, database: str, sort_fact_orders: bool = 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Run Snowpark RAW -> MART ETL.")
     parser.add_argument("--database", default="ECOMM_DEV", choices=["ECOMM_DEV", "ECOMM_PROD"])
-    parser.add_argument("--connection", default=None, help="Snowflake CLI connection name (e.g. dev)")
+    parser.add_argument(
+        "--connection", default=None, help="Snowflake CLI connection name (e.g. dev)"
+    )
     parser.add_argument(
         "--sort-fact-orders",
         action="store_true",
@@ -1873,7 +1879,9 @@ def render(session: Session) -> None:
 
     c1, c2 = st.columns([2, 1])
     with c1:
-        selected_cats = st.multiselect("Filter Categories", options=all_categories, default=all_categories)
+        selected_cats = st.multiselect(
+            "Filter Categories", options=all_categories, default=all_categories
+        )
     with c2:
         only_at_risk = st.toggle("Show Stockout Risk Only", value=False)
 
@@ -1894,7 +1902,9 @@ def render(session: Session) -> None:
     k1, k2, k3 = st.columns(3)
     k1.metric("SKUs Matching Filter", f"{len(df):,}")
     k2.metric("At-Risk SKUs (<= Reorder Pt)", f"{at_risk_count:,}")
-    k3.metric("Average Unit Margin", f"{avg_margin:.1f}%", help=f"Total On-Hand Units: {total_units:,}")
+    k3.metric(
+        "Average Unit Margin", f"{avg_margin:.1f}%", help=f"Total On-Hand Units: {total_units:,}"
+    )
 
     st.subheader("SKU Inventory & Velocity Table")
     st.dataframe(
@@ -1925,7 +1935,11 @@ def render(session: Session) -> None:
             .encode(
                 x=alt.X("TOTAL_NET_MARGIN:Q", title="Total Net Margin ($)"),
                 y=alt.Y("PRODUCT_NAME:N", sort="-x", title="Product"),
-                tooltip=["SKU_ID", "PRODUCT_NAME", alt.Tooltip("TOTAL_NET_MARGIN:Q", format="$,.2f")],
+                tooltip=[
+                    "SKU_ID",
+                    "PRODUCT_NAME",
+                    alt.Tooltip("TOTAL_NET_MARGIN:Q", format="$,.2f"),
+                ],
             )
             .properties(title="Top 10 Margin-Generating SKUs", height=300)
         )

@@ -12,7 +12,9 @@ from snowflake.snowpark import Session, Window
 from snowflake.snowpark import functions as F
 
 
-def _load_private_key_bytes(key_path: str | None, key_pem: str | None, passphrase: str | None) -> bytes:
+def _load_private_key_bytes(
+    key_path: str | None, key_pem: str | None, passphrase: str | None
+) -> bytes:
     """Decode an encrypted/unencrypted PKCS#8 PEM private key into DER bytes for Snowflake."""
     raw_pem = key_pem.encode("utf-8") if key_pem else Path(key_path or "").read_bytes()
     pwd = passphrase.encode("utf-8") if passphrase else None
@@ -54,9 +56,7 @@ def create_snowpark_session(database: str, connection_name: str | None = None) -
     elif os.getenv("SNOWFLAKE_PASSWORD"):
         cfg["password"] = os.environ["SNOWFLAKE_PASSWORD"]
     else:
-        raise RuntimeError(
-            "Provide --connection <name> or SNOWFLAKE_PRIVATE_KEY(_PATH) env vars."
-        )
+        raise RuntimeError("Provide --connection <name> or SNOWFLAKE_PRIVATE_KEY(_PATH) env vars.")
 
     return Session.builder.configs(cfg).create()
 
@@ -104,9 +104,7 @@ def build_mart_tables(session: Session, database: str, sort_fact_orders: bool = 
     )
 
     fact_orders = (
-        joined.with_column(
-            "ALLOCATED_DISCOUNT", F.round(F.col("DISCOUNT_AMOUNT") * alloc_ratio, 2)
-        )
+        joined.with_column("ALLOCATED_DISCOUNT", F.round(F.col("DISCOUNT_AMOUNT") * alloc_ratio, 2))
         .with_column("ALLOCATED_SHIPPING", F.round(F.col("SHIPPING_COST") * alloc_ratio, 2))
         .with_column(
             "NET_REVENUE", F.round(F.col("GROSS_REVENUE") - F.col("ALLOCATED_DISCOUNT"), 2)
@@ -274,7 +272,9 @@ def build_mart_tables(session: Session, database: str, sort_fact_orders: bool = 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Run Snowpark RAW -> MART ETL.")
     parser.add_argument("--database", default="ECOMM_DEV", choices=["ECOMM_DEV", "ECOMM_PROD"])
-    parser.add_argument("--connection", default=None, help="Snowflake CLI connection name (e.g. dev)")
+    parser.add_argument(
+        "--connection", default=None, help="Snowflake CLI connection name (e.g. dev)"
+    )
     parser.add_argument(
         "--sort-fact-orders",
         action="store_true",

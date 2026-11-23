@@ -1,0 +1,32 @@
+definition_version: 2
+
+env:
+  SNOWFLAKE_DATABASE: ECOMM_DEV
+  SNOWFLAKE_SCHEMA: APP
+  SNOWFLAKE_WAREHOUSE: ECOMM_APP_WH
+  APP_NAME: ECOMM_ANALYTICS_APP
+
+entities:
+  ecomm_analytics_app:
+    type: streamlit
+    identifier:
+      name: <% ctx.env.APP_NAME %>
+      database: <% ctx.env.SNOWFLAKE_DATABASE %>
+      schema: <% ctx.env.SNOWFLAKE_SCHEMA %>
+    title: "E-Commerce Analytics & Operations"
+    query_warehouse: <% ctx.env.SNOWFLAKE_WAREHOUSE %>
+    # Warehouse Runtime fallback (used because trial accounts block External Access Integrations
+    # needed by Container Runtime to fetch PyPI packages).
+    # To switch to Container Runtime (SPCS) on a paid account, uncomment below and remove app/environment.yml:
+    # compute_pool: ECOMM_APP_POOL
+    # runtime_name: SYSTEM$ST_CONTAINER_RUNTIME_PY3_11
+    # external_access_integrations:
+    #   - ECOMM_PYPI_ACCESS
+    main_file: app/streamlit_app.py
+    artifacts:
+      - app/streamlit_app.py
+      - app/utils
+      - app/views
+      - app/environment.yml
+      - pyproject.toml
+

@@ -138,7 +138,9 @@ def generate_orders_chunk(
 
     order_ids = np.array([f"ORD_{order_start_id + i:09d}" for i in range(num_orders)])
     order_statuses = rng.choice(ORDER_STATUSES, size=num_orders, p=ORDER_STATUS_WEIGHTS)
-    shipping_costs = np.round(rng.choice([0.0, 4.99, 7.99, 12.99], size=num_orders, p=[0.4, 0.3, 0.2, 0.1]), 2)
+    shipping_costs = np.round(
+        rng.choice([0.0, 4.99, 7.99, 12.99], size=num_orders, p=[0.4, 0.3, 0.2, 0.1]), 2
+    )
     discount_amounts = np.round(
         np.where(rng.random(num_orders) < 0.25, rng.uniform(5.0, 35.0, size=num_orders), 0.0), 2
     )
@@ -155,9 +157,9 @@ def generate_orders_chunk(
     )
 
     if unsorted:
-        orders_df = orders_df.sample(frac=1.0, random_state=int(rng.integers(0, 1_000_000))).reset_index(
-            drop=True
-        )
+        orders_df = orders_df.sample(
+            frac=1.0, random_state=int(rng.integers(0, 1_000_000))
+        ).reset_index(drop=True)
     else:
         orders_df = orders_df.sort_values("order_ts").reset_index(drop=True)
 
@@ -203,7 +205,7 @@ def generate_dataset(
     unsorted: bool = False,
     chunk_size: int = 500_000,
 ) -> dict[str, int]:
-    """Generate full synthetic e-commerce dataset into output_dir/{customers,products,orders,order_items}."""
+    """Generate synthetic e-commerce data into output_dir subfolders."""
     if rows <= 0:
         raise ValueError("--rows must be a positive integer.")
 
@@ -260,9 +262,13 @@ def generate_dataset(
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Generate synthetic e-commerce data for Snowflake.")
+    parser = argparse.ArgumentParser(
+        description="Generate synthetic e-commerce data for Snowflake."
+    )
     parser.add_argument("--rows", type=int, default=50_000, help="Number of order line items.")
-    parser.add_argument("--output-dir", type=Path, default=Path("data/raw"), help="Output directory.")
+    parser.add_argument(
+        "--output-dir", type=Path, default=Path("data/raw"), help="Output directory."
+    )
     parser.add_argument("--format", choices=["parquet", "csv"], default="parquet")
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument(
